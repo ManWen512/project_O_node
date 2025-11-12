@@ -12,7 +12,7 @@ connectDB();
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000", // or your frontend URL
+    origin: ["http://localhost:3000", "https://project-o-next.vercel.app/"], // or your frontend URL
     credentials: true,
   })
 );
