@@ -16,9 +16,7 @@ export const sendFriendRequest = async (req, res) => {
     });
 
     if (existing) {
-      return res
-        .status(400)
-        .json({ message: "Friend request already sent." });
+      return res.status(400).json({ message: "Friend request already sent." });
     }
 
     const friendRequest = new Friend({
@@ -84,11 +82,31 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
+//Get all pending user from both sides
+export const getAllPendingRequests = async (req, res) => {
+  try {
+    // const userId = req.user.id;
+    const { userId } = req.params;
+    const pending = await Friend.find({
+      $or: [
+        { recipient: userId }, // requests sent TO you
+        { requester: userId }, // requests sent BY you
+      ],
+      status: "pending",
+    })
+      .populate("requester", "name email")
+      .populate("recipient", "name email");
+    res.status(200).json(pending);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 // Get Friends List
 export const getFriends = async (req, res) => {
   try {
     // const userId = req.user.id;
-    const {userId } = req.params;
+    const { userId } = req.params;
     const friends = await Friend.find({
       $or: [{ requester: userId }, { recipient: userId }],
       status: "accepted",
@@ -96,7 +114,7 @@ export const getFriends = async (req, res) => {
       .populate("requester", "name email")
       .populate("recipient", "name email");
 
-       // 👇 Clean up the response to always return "the other user"
+    // 👇 Clean up the response to always return "the other user"
     const formatted = friends.map((f) =>
       f.requester._id.toString() === userId ? f.recipient : f.requester
     );
@@ -106,6 +124,3 @@ export const getFriends = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
-
-

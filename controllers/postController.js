@@ -1,16 +1,34 @@
 import Post from "../models/postModels.js";
+import { uploadToS3 } from "../services/s3Service.js";
+import fs from "fs";
 
 // Create post
 export const createPost = async (req, res) => {
   try {
-    const { userId, content, image, tags, visibility } = req.body;
+    const { userId, content, tags, visibility } = req.body;
+    let imageUrls = [];
+
+    //for multiple upload
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const url = await uploadToS3(
+          file.path,
+          file.originalname,
+          file.mimetype
+        );
+        imageUrls.push(url);
+        fs.unlinkSync(file.path); // remove temp file
+      }
+    }
+
     const post = await Post.create({
       user: userId,
       content,
-      image,
+      image: imageUrls,
       tags,
       visibility,
     });
+
     res.status(201).json(post);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -128,12 +146,10 @@ export const toggleLike = async (req, res) => {
     }
 
     await post.save();
-    res
-      .status(200)
-      .json({
-        likes: post.likes.length,
-        likedByUser: post.likes.includes(userId),
-      });
+    res.status(200).json({
+      likes: post.likes.length,
+      likedByUser: post.likes.includes(userId),
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

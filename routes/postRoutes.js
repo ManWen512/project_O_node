@@ -9,10 +9,12 @@ import {
   getAllPublicPostById,
   toggleLike,
 } from "../controllers/postController.js";
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: "uploads/" }); // temp folder
 
-router.post("/", createPost);
+router.post("/",  upload.array("image", 10), createPost);
 router.get("/", getPosts);
 router.get("/:id", getPostById);
 router.get("/private/user/:userId", getPrivatePostsByUser);
