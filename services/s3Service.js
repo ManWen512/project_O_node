@@ -4,7 +4,7 @@ import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import path from "path";
 
-export const uploadToS3 = async (filePath, originalName, mimeType) => {
+export const uploadToS3 = async (filePath, originalName, mimeType, folder) => {
   // Create S3 client INSIDE the function
   const s3 = new S3Client({
     region: process.env.AWS_REGION,
@@ -17,7 +17,7 @@ export const uploadToS3 = async (filePath, originalName, mimeType) => {
   try {
     const fileData = fs.readFileSync(filePath);
     const fileExtension = path.extname(originalName);
-    const fileName = `posts/${uuidv4()}${fileExtension}`;
+    const fileName = `${folder}/${uuidv4()}${fileExtension}`;
 
     const params = {
       Bucket: process.env.AWS_BUCKET_NAME,

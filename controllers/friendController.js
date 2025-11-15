@@ -75,7 +75,7 @@ export const getPendingRequests = async (req, res) => {
     const pending = await Friend.find({
       recipient: userId,
       status: "pending",
-    }).populate("requester", "name email");
+    }).populate("requester", "name email profileImage bio");
     res.status(200).json(pending);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -94,8 +94,8 @@ export const getAllPendingRequests = async (req, res) => {
       ],
       status: "pending",
     })
-      .populate("requester", "name email")
-      .populate("recipient", "name email");
+      .populate("requester", "name email profileImage bio")
+      .populate("recipient", "name email profileImage bio");
     res.status(200).json(pending);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -111,8 +111,8 @@ export const getFriends = async (req, res) => {
       $or: [{ requester: userId }, { recipient: userId }],
       status: "accepted",
     })
-      .populate("requester", "name email")
-      .populate("recipient", "name email");
+      .populate("requester", "name email profileImage bio")
+      .populate("recipient", "name email profileImage bio");
 
     // 👇 Clean up the response to always return "the other user"
     const formatted = friends.map((f) =>

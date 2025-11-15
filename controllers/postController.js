@@ -14,7 +14,8 @@ export const createPost = async (req, res) => {
         const url = await uploadToS3(
           file.path,
           file.originalname,
-          file.mimetype
+          file.mimetype,
+          'posts'
         );
         imageUrls.push(url);
         fs.unlinkSync(file.path); // remove temp file
@@ -39,7 +40,7 @@ export const createPost = async (req, res) => {
 export const getPosts = async (req, res) => {
   try {
     const posts = await Post.find({ visibility: "public" })
-      .populate("user", "name email")
+      .populate("user", "name email profileImage")
       .sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
@@ -64,7 +65,7 @@ export const getAllPostById = async (req, res) => {
     const { userId } = req.params;
     // Find all posts created by that user
     const posts = await Post.find({ user: userId })
-      .populate("user", "name email") // optional if you want user details
+      .populate("user", "name email profileImage") // optional if you want user details
       .sort({ createdAt: -1 }); // optional to get latest first
 
     res.json(posts);
@@ -78,7 +79,7 @@ export const getAllPublicPostById = async (req, res) => {
   try {
     const { userId } = req.params;
     const posts = await Post.find({ user: userId, visibility: "public" })
-      .populate("user", "name email")
+      .populate("user", "name email profileImage")
       .sort({ createdAt: -1 });
 
     res.json(posts);
@@ -94,7 +95,7 @@ export const getPrivatePostsByUser = async (req, res) => {
       user: req.params.userId,
       visibility: "private",
     })
-      .populate("user", "name email")
+      .populate("user", "name email profileImage")
       .sort({ createdAt: -1 });
     res.json(posts);
   } catch (error) {
