@@ -70,8 +70,8 @@ export const rejectFriendRequest = async (req, res) => {
 // Get Pending Requests for Current User
 export const getPendingRequests = async (req, res) => {
   try {
-    // const userId = req.user.id;
-    const { userId } = req.params;
+    const userId = req.user.id;
+   
     const pending = await Friend.find({
       recipient: userId,
       status: "pending",
@@ -85,8 +85,7 @@ export const getPendingRequests = async (req, res) => {
 //Get all pending user from both sides
 export const getAllPendingRequests = async (req, res) => {
   try {
-    // const userId = req.user.id;
-    const { userId } = req.params;
+  const userId = req.user.id;
     const pending = await Friend.find({
       $or: [
         { recipient: userId }, // requests sent TO you

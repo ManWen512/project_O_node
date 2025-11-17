@@ -5,8 +5,9 @@ import fs from "fs";
 // Create post
 export const createPost = async (req, res) => {
   try {
-    const { userId, content, tags, visibility } = req.body;
+    const {  content, tags, visibility } = req.body;
     let imageUrls = [];
+    const userId = req.user.id;
 
     //for multiple upload
     if (req.files && req.files.length > 0) {
@@ -62,7 +63,8 @@ export const getPostById = async (req, res) => {
 //Get all post by Id
 export const getAllPostById = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
+ 
     // Find all posts created by that user
     const posts = await Post.find({ user: userId })
       .populate("user", "name email profileImage") // optional if you want user details
@@ -77,7 +79,7 @@ export const getAllPostById = async (req, res) => {
 //Get Allpublic post by userId
 export const getAllPublicPostById = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     const posts = await Post.find({ user: userId, visibility: "public" })
       .populate("user", "name email profileImage")
       .sort({ createdAt: -1 });
@@ -91,8 +93,10 @@ export const getAllPublicPostById = async (req, res) => {
 //Get onlyme posts
 export const getPrivatePostsByUser = async (req, res) => {
   try {
+
+    const userId = req.user.id;
     const posts = await Post.find({
-      user: req.params.userId,
+      userId,
       visibility: "private",
     })
       .populate("user", "name email profileImage")
@@ -107,6 +111,7 @@ export const getPrivatePostsByUser = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     // 1. Find the post first
+    
     const post = await Post.findById(req.params.id);
 
     if (!post) {
@@ -114,7 +119,7 @@ export const deletePost = async (req, res) => {
     }
 
     // 2. Check if logged-in user is the owner
-    if (post.user.toString() !== req.user._id.toString()) {
+    if (post.user.toString() !== req.user.id.toString()) {
       return res
         .status(403)
         .json({ message: "You are not authorized to delete this post" });
@@ -133,7 +138,7 @@ export const deletePost = async (req, res) => {
 export const toggleLike = async (req, res) => {
   try {
     const { postId } = req.params;
-    const userId = req.body.userId; // from session
+      const userId = req.user.id; // from session
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });

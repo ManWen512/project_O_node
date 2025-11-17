@@ -1,4 +1,5 @@
 import User from "../models/userModels.js";
+import Post from "../models/postModels.js";
 import { uploadToS3 } from "../services/s3Service.js";
 import fs from "fs";
 
@@ -19,15 +20,21 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const {id} = req.params;
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
-    const user = await User.findById(id).select("-password");
+    const user = await User.findById(id).select("-password").lean();;
+    
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(user);
+      // Get all posts for this user
+    const posts = await Post.find({ user: id })
+      .populate("user", "name email profileImage") // optional
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ user, posts });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -36,7 +43,7 @@ export const getUserById = async (req, res) => {
 export const uploadProfileImage = async (req, res) => {
   try {
 
-     const {userId} = req.body; 
+     const userId = req.user.id;
 
     if (!req.file) {
       return res.status(400).json({ message: "No image uploaded" });
@@ -99,9 +106,9 @@ export const uploadProfileImage = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { name, bio } = req.body;
-    
+    const userId = req.user.id;
     const user = await User.findByIdAndUpdate(
-      req.params.userId,
+      userId,
       { name, bio },
       { new: true, runValidators: true }
     ).select("-password");
