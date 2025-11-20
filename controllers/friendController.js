@@ -4,8 +4,8 @@ import User from "../models/userModels.js";
 // Send Friend Request
 export const sendFriendRequest = async (req, res) => {
   try {
-    const { recipientId, requesterId } = req.body; //requesterId can be taken from body because there is no auth middleware
-    // const requesterId = req.user.id; // Assuming auth middleware sets req.user
+    const { recipientId } = req.body; //requesterId can be taken from body because there is no auth middleware
+    const requesterId = req.user.id; // Assuming auth middleware sets req.user
 
     // Check if already requested or friends
     const existing = await Friend.findOne({
@@ -123,3 +123,31 @@ export const getFriends = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+// Unfriend a user
+
+export const unfriendUser = async (req, res) => {
+  try {
+    const userId = req.user.id;       // logged-in user
+    const friendId = req.params.id;   // the user to unfriend
+
+    // Find existing accepted friendship in either direction
+    const friendship = await Friend.findOneAndDelete({
+      status: "accepted",
+      $or: [
+        { requester: userId, recipient: friendId },
+        { requester: friendId, recipient: userId },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(404).json({ message: "Friendship not found" });
+    }
+
+    return res.status(200).json({ message: "Unfriended successfully" });
+  } catch (error) {
+    console.error("Unfriend error:", error);
+    res.status(500).json({ message: "Server error while unfriending" });
+  }
+};
+

@@ -20,16 +20,16 @@ export const getAllUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     if (!id) {
       return res.status(400).json({ message: "User ID is required" });
     }
-    const user = await User.findById(id).select("-password").lean();;
-    
+    const user = await User.findById(id).select("-password").lean();
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-      // Get all posts for this user
+    // Get all posts for this user
     const posts = await Post.find({ user: id })
       .populate("user", "name email profileImage") // optional
       .sort({ createdAt: -1 });
@@ -42,30 +42,28 @@ export const getUserById = async (req, res) => {
 
 export const uploadProfileImage = async (req, res) => {
   try {
-
-     const userId = req.user.id;
+    const userId = req.user.id;
 
     if (!req.file) {
       return res.status(400).json({ message: "No image uploaded" });
     }
-
 
     // Find user
     const user = await User.findById(userId);
     if (!user) {
       // Clean up temp file
       fs.unlinkSync(req.file.path);
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found",
       });
     }
 
-      // Delete old profile image from S3 if exists
+    // Delete old profile image from S3 if exists
     if (user.profileImage) {
       try {
-        const oldKey = user.profileImage.split('.com/')[1];
-        if (oldKey && oldKey.startsWith('profiles/')) {
+        const oldKey = user.profileImage.split(".com/")[1];
+        if (oldKey && oldKey.startsWith("profiles/")) {
           await deleteFromS3(oldKey);
           console.log("Old profile image deleted:", oldKey);
         }
@@ -75,12 +73,12 @@ export const uploadProfileImage = async (req, res) => {
       }
     }
 
-  // Upload new profile image to S3
+    // Upload new profile image to S3
     const imageUrl = await uploadToS3(
-      req.file.path, 
-      req.file.originalname, 
+      req.file.path,
+      req.file.originalname,
       req.file.mimetype,
-      'profiles' // Custom folder for profile images
+      "profiles" // Custom folder for profile images
     );
     // remove local file
     fs.unlinkSync(req.file.path);
@@ -112,23 +110,23 @@ export const updateUser = async (req, res) => {
       { name, bio },
       { new: true, runValidators: true }
     ).select("-password");
-    
+
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found",
       });
     }
-    
+
     res.status(200).json({
       success: true,
       message: "User updated successfully",
       user,
     });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: error.message 
+      message: error.message,
     });
   }
 };

@@ -5,7 +5,7 @@ import fs from "fs";
 // Create post
 export const createPost = async (req, res) => {
   try {
-    const {  content, tags, visibility } = req.body;
+    const { content, tags, visibility } = req.body;
     let imageUrls = [];
     const userId = req.user.id;
 
@@ -16,7 +16,7 @@ export const createPost = async (req, res) => {
           file.path,
           file.originalname,
           file.mimetype,
-          'posts'
+          "posts"
         );
         imageUrls.push(url);
         fs.unlinkSync(file.path); // remove temp file
@@ -39,11 +39,18 @@ export const createPost = async (req, res) => {
 
 // Get all posts
 export const getPosts = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
   try {
     const posts = await Post.find({ visibility: "public" })
       .populate("user", "name email profileImage")
-      .sort({ createdAt: -1 });
-    res.json(posts);
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Post.countDocuments();
+    res.json({ posts, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -64,7 +71,7 @@ export const getPostById = async (req, res) => {
 export const getAllPostById = async (req, res) => {
   try {
     const userId = req.user.id;
- 
+
     // Find all posts created by that user
     const posts = await Post.find({ user: userId })
       .populate("user", "name email profileImage") // optional if you want user details
@@ -93,7 +100,6 @@ export const getAllPublicPostById = async (req, res) => {
 //Get onlyme posts
 export const getPrivatePostsByUser = async (req, res) => {
   try {
-
     const userId = req.user.id;
     const posts = await Post.find({
       userId,
@@ -111,7 +117,7 @@ export const getPrivatePostsByUser = async (req, res) => {
 export const deletePost = async (req, res) => {
   try {
     // 1. Find the post first
-    
+
     const post = await Post.findById(req.params.id);
 
     if (!post) {
@@ -138,7 +144,7 @@ export const deletePost = async (req, res) => {
 export const toggleLike = async (req, res) => {
   try {
     const { postId } = req.params;
-      const userId = req.user.id; // from session
+    const userId = req.user.id; // from session
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });

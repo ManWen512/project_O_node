@@ -6,6 +6,7 @@ import {
   getPendingRequests,
   getFriends,
   getAllPendingRequests,
+  unfriendUser,
 } from "../controllers/friendController.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js";
 
@@ -17,5 +18,6 @@ router.put("/reject/:requestId",authenticateToken, rejectFriendRequest);
 router.get("/pending",authenticateToken, getPendingRequests);
 router.get("/allpending",authenticateToken, getAllPendingRequests);
 router.get("/list/:userId",authenticateToken, getFriends);
+router.delete("/unfriend/:id", authenticateToken, unfriendUser);
 
 export default router;
