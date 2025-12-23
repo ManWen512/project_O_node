@@ -8,6 +8,9 @@ import rateLimit from "express-rate-limit";
 import jwt from "jsonwebtoken";
 // redisRateLimit.js
 import { redis } from "../services/redis.js";
+import { chat, toStreamResponse, toolDefinition } from '@tanstack/ai';
+import { gemini } from '@tanstack/ai-gemini'; 
+import z from 'zod'
 
 const MAX_REQUESTS = 5; // per user
 const WINDOW_MS = 24 * 60 * 60 * 1000; // 1 day in ms
@@ -187,6 +190,14 @@ export const AiChat = async (req, res) => {
     res.status(500).json({ error: "AI generation failed" });
   }
 };
+
+
+
+
+
+
+
+
 
 export const AiHistory = async (req, res) => {
   try {

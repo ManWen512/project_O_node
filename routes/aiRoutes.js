@@ -5,8 +5,8 @@ import {AiChat, AiHistory, getRateLimit, semanticSearch} from "../controllers/ai
 const router = express.Router();
 
 router.get("/stream", AiChat);
-router.get("/chat",authenticateToken, AiHistory);
+router.get("/chat", authenticateToken, AiHistory);
 router.post("/search", semanticSearch);
-router.get("/get-ratelimit/:userId",authenticateToken,getRateLimit )
+router.get("/get-ratelimit/:userId", authenticateToken, getRateLimit);
 
 export default router;
